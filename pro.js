@@ -1,19 +1,25 @@
-const service = require('../service/pro.js')
-const getControl = async (req,res)=>{
+const data = require('../model/data.js')
+const users = require('../model/users.js')
+const sequelize = require('../db.js')
+const getService = async ()=>{
     try
     {
-        let d = await service.getService()
-        res.status(200).json({
-            message : 'list of users spent',
-            data : d
+        let r = await users.findAll({
+            attributes : ['userId','username',[sequelize.fn('sum',sequelize.col('data.amount')),'TotalSpent']],
+            include : [{
+                model : data,
+                attributes : []
+            }],
+            group : ['users.userId'],
+            order : [[sequelize.literal('TotalSpent'),'DESC']]
         })
+        console.log(r)
+        return r
+
     }
     catch(e)
     {
-        res.status(500).json({
-            message : 'an error occured',
-            data : e
-        })
+        throw e
     }
 }
-module.exports = {getControl}
+module.exports = {getService}
